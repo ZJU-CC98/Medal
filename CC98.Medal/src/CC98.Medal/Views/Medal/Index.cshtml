@@ -1,0 +1,70 @@
+﻿@using Microsoft.AspNetCore.Authorization
+@model IPagedList<Medal>
+@inject IAuthorizationService AuthorizationService
+@{
+	ViewBag.PageTitle = "勋章列表";
+
+	var canAdmin = true;
+}
+
+<div class="row">
+	<div class="col-md-2">
+		@await Component.InvokeAsync("MedalCategoryList")
+	</div>
+	<div class="col-md-10">
+		@if (Model.Any())
+		{
+			<div class="row">
+				@foreach (var i in Model)
+				{
+					<div class="col-md-4 col-sm-6 col-xs-12">
+						<div class="thumbnail">
+							<div class="media">
+								<div class="media-left media-middle">
+									<img src="@i.ImageUri" alt="勋章图像" title="@i.Description" style="margin: 10px;" />
+								</div>
+								<div class="media-body">
+									<p class="h4">
+										<a asp-controller="Medal" asp-action="Detail" asp-route-id="@i.Id">@i.Name</a>
+										@if (await AuthorizationService.AuthorizeAsync(User, null, Policies.Edit))
+										{
+											<span>
+												<a asp-controller="Medal" asp-action="Edit" asp-route-id="@i.Id" title="编辑该勋章的信息"><span class="glyphicon glyphicon-pencil"></span></a>
+												<a asp-controller="Medal" asp-action="Delete" asp-route-id="@i.Id" title="删除该勋章"><span class="glyphicon glyphicon-remove"></span></a>
+											</span>
+										}
+									</p>
+									<p class="help-block">@i.Description</p>
+									<p>
+										@if (i.CanApply)
+										{
+											<span class="label label-info">可申请</span>
+										}
+										@if (i.PriceSettings.Length > 0)
+										{
+											<span class="label label-success">可购买</span>
+										}
+										@if (!i.CanApply && i.PriceSettings.Length == 0)
+										{
+											<span class="label label-danger">仅颁发</span>
+										}
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				}
+			</div>
+		}
+		else
+		{
+			<p class="text-center text-muted">目前没有可以显示的勋章</p>
+		}
+	</div>
+</div>
+
+<hr />
+<a asp-controller="Medal" asp-action="Create" class="btn btn-default btn-primary">添加新勋章</a>
+
+
+

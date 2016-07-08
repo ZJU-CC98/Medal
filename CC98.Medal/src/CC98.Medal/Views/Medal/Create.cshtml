@@ -1,0 +1,17 @@
+﻿@model Medal
+@{
+	ViewBag.PageTitle = "添加勋章";
+}
+
+<form asp-controller="Medal" asp-action="Create" method="post" asp-antiforgery="true">
+
+	@await Html.PartialAsync("_EditPartial")
+
+	<hr/>
+	<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+	<button type="submit" class="btn btn-default btn-primary">确认添加</button>
+	<button type="reset" class="btn btn-default">清空填写</button>
+
+</form>
+
+@await Html.PartialAsync("_UploadFilePartial")
