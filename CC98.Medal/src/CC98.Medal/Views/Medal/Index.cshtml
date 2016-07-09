@@ -20,22 +20,24 @@
 					<div class="col-md-4 col-sm-6 col-xs-12">
 						<div class="thumbnail">
 							<div class="media">
+                               
 								<div class="media-left media-middle">
-									<img src="@i.ImageUri" alt="勋章图像" title="@i.Description" style="margin: 10px;" />
+									<img src="@i.ImageUri" alt="勋章图像" title="@i.Description" style="padding:15px 25px;margin:10px;border:1px solid LightBlue"/>
 								</div>
 								<div class="media-body">
+									
+                                    <p class="h5">
+                                        <a asp-controller="Medal" asp-action="Detail" asp-route-id="@i.Id"><strong>@i.Name&nbsp;</strong></a>
+                                        <small>
+                                            <span>
+                                                <a asp-controller="Medal" asp-action="Edit" asp-route-id="@i.Id" title="编辑该勋章的信息"><span class="glyphicon glyphicon-pencil"></span></a>
+                                                <a asp-controller="Medal" asp-action="Delete" asp-route-id="@i.Id" title="删除该勋章"><span class="glyphicon glyphicon-remove"></span></a>
+                                            </span>
+                                        </small>
+
+                                    </p>
+									<p class="h6"style="text-indent:1em">$5000</p>
 									<p class="h4">
-										<a asp-controller="Medal" asp-action="Detail" asp-route-id="@i.Id">@i.Name</a>
-										@if (await AuthorizationService.AuthorizeAsync(User, null, Policies.Edit))
-										{
-											<span>
-												<a asp-controller="Medal" asp-action="Edit" asp-route-id="@i.Id" title="编辑该勋章的信息"><span class="glyphicon glyphicon-pencil"></span></a>
-												<a asp-controller="Medal" asp-action="Delete" asp-route-id="@i.Id" title="删除该勋章"><span class="glyphicon glyphicon-remove"></span></a>
-											</span>
-										}
-									</p>
-									<p class="help-block">@i.Description</p>
-									<p>
 										@if (i.CanApply)
 										{
 											<span class="label label-info">可申请</span>
@@ -46,10 +48,12 @@
 										}
 										@if (!i.CanApply && i.PriceSettings.Length == 0)
 										{
-											<span class="label label-danger">仅颁发</span>
+											<span class="label label-warning">仅颁发</span>
 										}
 									</p>
 								</div>
+                                
+                                <p class="help-block" style="border-top:1px solid #ddd;padding:10px">@i.Description</p>
 							</div>
 						</div>
 					</div>
