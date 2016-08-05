@@ -7,97 +7,123 @@
 @{
 	ViewBag.PageTitle = string.Format(CultureInfo.CurrentUICulture, "{0} - 勋章详情", Model.Name);
 }
+<div class="row">
+    <div class="col-md-8">
+        <div class="media">
+            <div class="media-left media-heading">
+                <img src="http://file.cc98.org/Medals/d4gdsj2t.gif" alt="勋章图像" style="padding:25px 30px;margin:20px ;border:1px solid LightBlue" />
+            </div>
+            <div class="media-body" style="padding:15px 25px">
+                <p class="h4"><strong>勋章描述</strong></p>
+                @if (!string.IsNullOrEmpty(Model.Description))
+                {
+                    <p>@Model.Description</p>
+                }
+                else
+                {
+                    <p class="text-muted text-center">该勋章没有提供描述</p>
+                }
+                <br />
+                @if (!string.IsNullOrEmpty(Model.Link))
+                {
 
-@if (!string.IsNullOrEmpty(Model.Link))
-{
-	<a class="btn btn-default btn-primary" href="@Model.Link">访问该勋章关联的网页</a>
-}
+                    <a class="btn btn-default " href="@Model.Link">访问该勋章关联的网页</a>
+                    
+                }
 
-@if (!string.IsNullOrEmpty(Model.Description))
-{
-	<p>@Model.Description</p>
-}
-else
-{
-	<p class="text-muted text-center">该勋章没有提供描述</p>
-}
+                
+            </div>
+        </div>
+        <hr />
 
-<hr />
+		<div style="margin-left: auto;margin-right: auto;display: table;width: auto;padding-top:20px;">
+			@if (ExternalSignInManager.IsSignedIn(User))
+			{
 
-
-@if (ExternalSignInManager.IsSignedIn(User))
-{
-
-	if (Model.CanApply)
-	{
-		<button type="button" class="btn btn-info">申请勋章</button>
-	}
-
-	if (Model.PriceSettings.Length > 0)
-	{
-		<div class="btn-group">
-			<button type="button" class="btn btn-default btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-				购买勋章 <span class="caret"></span>
-			</button>
-			<ul class="dropdown-menu">
-
-				@for (var index = 0; index < Model.PriceSettings.Length; index++)
+				if (Model.CanApply)
 				{
-					var item = Model.PriceSettings[index];
+					<button type="button" class="btn btn-info" style="margin:10px">申请勋章</button> }
 
-					var displayText =
-						item.ExpiryDate == null
-							? string.Format(CultureInfo.CurrentUICulture, "永久有效，价格 {0}", item.Price)
-							: string.Format(CultureInfo.CurrentUICulture, "{0} 天有效，价格 {1}", item.ExpiryDate.Value, item.Price);
+				if (Model.PriceSettings.Length > 0)
+				{
+					<div class="btn-group">
+						<button type="button" class="btn btn-default btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="margin:10px">
+							购买勋章 <span class="caret"></span>
+						</button>
+						<ul class="dropdown-menu">
 
-					<li>
-						<a href="#" onclick="showOrderDialog(this);" data-type="@index" data-name="@Model.Name" data-price="@item.Price" data-days="@item.ExpiryDate">@displayText</a>
-					</li>
-				}
-			</ul>
+							@for (var index = 0; index < Model.PriceSettings.Length; index++)
+							{
+								var item = Model.PriceSettings[index];
+
+								var displayText =
+									item.ExpiryDate == null
+										? string.Format(CultureInfo.CurrentUICulture, "永久有效，价格 {0}", item.Price)
+										: string.Format(CultureInfo.CurrentUICulture, "{0} 天有效，价格 {1}", item.ExpiryDate.Value, item.Price);
+
+								<li>
+									<a href="#" onclick="showOrderDialog(this);" data-type="@index" data-name="@Model.Name" data-price="@item.Price" data-days="@item.ExpiryDate">@displayText</a>
+								</li>
+							}
+						</ul>
+					</div> }
+
+				if (!Model.CanApply && Model.PriceSettings.Length == 0)
+				{
+					<p class="text-center text-muted">这个勋章只能由管理员颁发。如果你希望获得它，请联系管理员。</p> }
+
+				<form asp-controller="Medal" asp-action="Order" asp-route-id="@Model.Id" method="post" asp-antiforgery="true" data-ajax="true" data-ajax-success="" data-ajax-failure="onAjaxError(this, xhr);">
+
+					<input type="hidden" name="type" id="order-type-input" />
+
+					<div class="modal fade" id="order-medal-dialog">
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title">购买勋章</h4>
+								</div>
+								<div class="modal-body">
+									<p>
+										你即将购买勋章 <strong id="order-medal-name-text"></strong>。本次购买需要花费 <strong id="order-medal-price-text"></strong> 财富值，有效期为 <strong id="order-medal-days-text"></strong>。
+									</p>
+									<p class="text-info">购买勋章后，你将立即获得该勋章并扣除对应的财富值。如果你之前已经购买了该勋章，则本次购买有效期将和勋章的现有剩余有效天数叠加。如果你已经申请了该勋章且本次购买为永久有效，则申请将自动撤销。</p>
+									<p>
+										如果你确定要执行购买操作，请单击<q>确认购买</q>按钮。否则请单击<q>关闭</q>或对话框外的任意位置。
+									</p>
+								</div>
+								<div class="modal-footer">
+									<p class="dialog-error text-danger"></p>
+									<button type="submit" class="btn btn-primary">确认购买</button>
+									<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+								</div>
+							</div><!-- /.modal-content -->
+						</div><!-- /.modal-dialog -->
+					</div><!-- /.modal -->
+				</form>
+			}
+			else
+			{
+				<p class="text-muted text-center">如果你想要申请或者购买这个勋章，请先<a asp-controller="Account" asp-action="LogOn" asp-route-returnUrl="@Url.Action()">登录</a>后再访问这里</p>
+			}
 		</div>
-	}
+        
+    </div>
+    <div class="col-md-4" style="border-left:1px solid #ccc;padding:15px">
+        <h4>Auser</h4>
+        <p class="h5">我的财富值：888888</p>
+		<p class="h5">我的权限：普通用户</p>
+        <hr />
+		
+        <h4>已购买的勋章</h4>
+        
+        <img src="http://file.cc98.org/Medals/d4gdsj2t.gif" alt="勋章图像" style="margin:10px;" />有效期：13天<br />
+        <img src="http://file.cc98.org/Medals/d4gdsj2t.gif" alt="勋章图像" style="margin:10px;" />有效期：13天<br />
+        <img src="http://file.cc98.org/Medals/d4gdsj2t.gif" alt="勋章图像" style="margin:10px;" />有效期：13天<br />
+        <a>>>查看全部</a>
+    </div>
 
-	if (!Model.CanApply && Model.PriceSettings.Length == 0)
-	{
-		<p class="text-center text-muted">这个勋章只能由管理员颁发。如果你希望获得它，请联系管理员。</p>
-	}
-
-	<form asp-controller="Medal" asp-action="Order" asp-route-id="@Model.Id" method="post" asp-antiforgery="true" data-ajax="true" data-ajax-success="" data-ajax-failure="onAjaxError(this, xhr);">
-
-		<input type="hidden" name="type" id="order-type-input" />
-
-		<div class="modal fade" id="order-medal-dialog">
-			<div class="modal-dialog">
-				<div class="modal-content">
-					<div class="modal-header">
-						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-						<h4 class="modal-title">购买勋章</h4>
-					</div>
-					<div class="modal-body">
-						<p>
-							你即将购买勋章 <strong id="order-medal-name-text"></strong>。本次购买需要花费 <strong id="order-medal-price-text"></strong> 财富值，有效期为 <strong id="order-medal-days-text"></strong>。
-						</p>
-						<p class="text-info">购买勋章后，你将立即获得该勋章并扣除对应的财富值。如果你之前已经购买了该勋章，则本次购买有效期将和勋章的现有剩余有效天数叠加。如果你已经申请了该勋章且本次购买为永久有效，则申请将自动撤销。</p>
-						<p>
-							如果你确定要执行购买操作，请单击<q>确认购买</q>按钮。否则请单击<q>关闭</q>或对话框外的任意位置。
-						</p>
-					</div>
-					<div class="modal-footer">
-						<p class="dialog-error text-danger"></p>
-						<button type="submit" class="btn btn-primary">确认购买</button>
-						<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-					</div>
-				</div><!-- /.modal-content -->
-			</div><!-- /.modal-dialog -->
-		</div><!-- /.modal -->
-	</form>
-}
-else
-{
-	<p class="text-muted text-center">如果你想要申请或者购买这个勋章，请先<a asp-controller="Account" asp-action="LogOn" asp-route-returnUrl="@Url.Action()">登录</a>后再访问这里</p>
-}
-
+</div>
 @section scripts{
 
 	<script type="text/javascript" language="javascript">
